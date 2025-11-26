@@ -27,25 +27,42 @@ Please follow this structure strictly.
 
 const MOD_3_PROMPT = `
 TEACHING PLAN for MODULE 3 (Interface Overview):
-Follow this sequence strictly. Teach one section at a time.
+You must follow this EXACT state-machine sequence. 
+Check the user's last message to determine which step to output.
 
-1. **Introduction & Home**: Explain that GA4 Home is the landing page with AI insights.
-   - **ACTION**: Include a 'simulationRedirect' object: {"page": "home", "message": "Check the 'Event count' in the main card tabs."}
-   - **TASK**: Ask the user: "Open the Simulator. What is the total Event Count shown on the Home dashboard?"
+**STATE 1: INTRO (Default Start)**
+- IF user starts module, OUTPUT:
+  - 'microLessonText': "Module 3: Exploring the GA4 Interface\n\nIn this module, we will go beyond just clicking buttons. You will learn the *logic* behind the interface design. GA4 is structured around the customer journey—from acquisition to retention—rather than just isolated sessions.\n\nWhat you will learn:\n› Home Page: AI-driven insights & personalization\n› Reports Snapshot: The Life Cycle collection\n› Realtime: Debugging & immediate feedback\n› Explorations: Advanced ad-hoc analysis"
+  - 'practiceTask': "Ready to explore the interface?"
+  - 'taskOptions': ["Let's go!"]
 
-2. **Reports Workspace**: Explain where standard aggregated data lives.
-   - **ACTION**: Include a 'simulationRedirect' object: {"page": "reports", "subPage": "snapshot", "message": "Find 'Users by Session default channel group' card."}
-   - **TASK**: Ask: "In the Reports Snapshot, which channel group (blue bar) is driving the most traffic?"
+**STATE 2: HOME PAGE**
+- IF user says "Let's go!" or "Let's go", OUTPUT:
+  - 'microLessonText': "1. The Home Page: Your AI Command Center\n\nThe Home page is not just a static dashboard; it is dynamic. Google uses machine learning to surface 'Insights' and 'Recommendations' tailored to your specific data history.\n\nIt highlights:\n- **Key Metrics**: Users, Event Count, and Conversions at a glance.\n- **Recently Accessed**: Quickly jump back to reports you use often.\n- **Suggested Insights**: Automated anomaly detection (e.g., 'Spike in users from Japan').\n\nUse the Home page for a daily health check of your property before diving deep."
+  - 'simulationRedirect': { "page": "home", "message": "Explore the Home dashboard metrics." }
+  - 'practiceTask': "Open the Simulator to check the Home Dashboard. What is the total 'Event Count' displayed in the main card?"
+  - 'taskOptions': ["68K", "2M", "146K"]
 
-3. **Realtime Report**: Explain monitoring activity as it happens (last 30 mins).
-   - **ACTION**: Include a 'simulationRedirect' object: {"page": "reports", "subPage": "realtime", "message": "Check 'Users in last 30 minutes' count."}
-   - **TASK**: Ask: "How many users are active right now in the simulation?"
+**STATE 3: REPORTS SNAPSHOT**
+- IF user answers "2M" (or correctly identifies Event Count), OUTPUT:
+  - 'microLessonText': "2. Reports Snapshot: The Life Cycle Collection\n\nNavigate to the 'Reports' workspace. Unlike the Home page, this is where structured analysis happens. The menu is divided into two main Collections:\n\n1. **Life Cycle**: Mirrors the user funnel (Acquisition -> Engagement -> Monetization -> Retention).\n2. **User**: Who your visitors are (Demographics -> Tech).\n\nThe 'Reports Snapshot' is the overview dashboard for all these reports. It gives you 'cheat sheet' cards for every stage of the funnel."
+  - 'simulationRedirect': { "page": "reports", "subPage": "snapshot", "message": "Explore the Reports Snapshot cards." }
+  - 'practiceTask': "Check the Simulator's Snapshot. Which channel group (blue bar) is currently driving the most traffic in the 'Users by Session default channel group' card?"
+  - 'taskOptions': ["Direct", "Organic Search", "Paid Search"]
 
-4. **Explorations**: Brief intro to custom analysis.
-   - **ACTION**: Include a 'simulationRedirect' object: {"page": "explore", "message": "Look at the template gallery options."}
-   - **TASK**: Ask: "What is the specific tool used for path analysis called?" (Hint: Path exploration).
+**STATE 4: REALTIME**
+- IF user answers "Direct" (or correctly identifies channel), OUTPUT:
+  - 'microLessonText': "3. Realtime Report: Immediate Validation\n\nThe Realtime report is unique because it shows data from the last 30 minutes (per minute). \n\n**Why use this?**\n- **Debugging**: Did you just launch a new campaign or tag? Check here to see if traffic hits immediately.\n- **Urgency**: Monitor flash sales or viral social posts as they happen.\n\nNote: Data here is not fully processed yet, so do not use it for historical reporting."
+  - 'simulationRedirect': { "page": "reports", "subPage": "realtime", "message": "View the Realtime activity map and cards." }
+  - 'practiceTask': "In the Simulator's Realtime view, look at the top card. How many 'Active Users' are on the site right now (last 30 min)?"
+  - 'taskOptions': ["37", "42", "9"]
 
-**RULE**: Do not output all steps at once. Wait for the user to confirm or answer before moving to the next interface section.
+**STATE 5: EXPLORATIONS**
+- IF user answers "42" (or correctly identifies users), OUTPUT:
+  - 'microLessonText': "4. Explorations: Beyond Standard Reports\n\nStandard reports (like Acquisition) are 'aggregated'—they are pre-built and static. Sometimes, you need to answer complex questions like \"What exact path did users take from the Home page to the Cart?\"\n\nFor this, we use **Explorations**. This is a canvas for ad-hoc analysis where you can drag-and-drop segments, dimensions, and metrics to build custom visualizations like Funnels and Path analysis."
+  - 'simulationRedirect': { "page": "explore", "message": "Check the available Exploration templates." }
+  - 'practiceTask': "Which Exploration tool in the simulator is best for visualizing the specific steps (or tree graph) users take through your site?"
+  - 'taskOptions': ["Free form", "Path exploration", "Funnel exploration"]
 `;
 
 const MODULES: Module[] = [
@@ -55,7 +72,6 @@ const MODULES: Module[] = [
     description: 'Deep dive into events vs sessions.', 
     promptContext: MOD_1_PROMPT 
   },
-  // Reordered: Setup & Config is now M2
   { 
     id: 'm2', 
     title: 'Setup & Config', 
@@ -74,7 +90,6 @@ const MODULES: Module[] = [
     description: 'Analyzing acquisition & engagement.', 
     promptContext: 'Module 4: User Acquisition vs Traffic Acquisition. Engagement Rate. Events per User.' 
   },
-  // New Module 5: Reports & Advertising
   { 
     id: 'm5', 
     title: 'Reports & Advertising', 
@@ -192,6 +207,7 @@ const App: React.FC = () => {
             <PracticeLab 
                 mode={viewMode === ViewMode.GA4_SIMULATOR ? 'ga4' : 'interview'} 
                 redirectContext={viewMode === ViewMode.GA4_SIMULATOR ? simulationContext : null}
+                onBack={() => setViewMode(ViewMode.LESSON)}
             />
           );
       }

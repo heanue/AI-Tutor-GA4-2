@@ -132,17 +132,18 @@ type SubNavItem =
 interface PracticeLabProps {
   mode: 'ga4' | 'interview';
   redirectContext?: SimulationRedirect | null;
+  onBack: () => void;
 }
 
-export const PracticeLab: React.FC<PracticeLabProps> = ({ mode, redirectContext }) => {
+export const PracticeLab: React.FC<PracticeLabProps> = ({ mode, redirectContext, onBack }) => {
   return (
     <div className="flex flex-col h-full bg-[#f9f9f9] text-slate-800 font-sans">
         {/* Content Area */}
         <div className="flex-1 overflow-hidden relative">
             {mode === 'ga4' ? (
-                <GA4Simulator initialContext={redirectContext} />
+                <GA4Simulator initialContext={redirectContext} onBack={onBack} />
             ) : (
-                <InterviewSimulator />
+                <InterviewSimulator onBack={onBack} />
             )}
         </div>
     </div>
@@ -151,7 +152,7 @@ export const PracticeLab: React.FC<PracticeLabProps> = ({ mode, redirectContext 
 
 // --- INTERVIEW SIMULATOR COMPONENT ---
 
-const InterviewSimulator: React.FC = () => {
+const InterviewSimulator: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [selectedRole, setSelectedRole] = useState<RoleData | null>(null);
 
   if (selectedRole) {
@@ -216,8 +217,18 @@ const InterviewSimulator: React.FC = () => {
   }
 
   return (
-    <div className="h-full overflow-y-auto p-8 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
+    <div className="h-full overflow-y-auto p-8 bg-gray-50 relative">
+        <button 
+            onClick={onBack}
+            className="absolute top-6 left-6 text-slate-500 hover:text-orange-600 font-medium flex items-center transition-colors"
+        >
+             <svg className="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Lessons
+        </button>
+
+        <div className="max-w-6xl mx-auto mt-8">
             <div className="text-center mb-10">
                 <h2 className="text-3xl font-bold text-slate-800 mb-3">Interview Simulator</h2>
                 <p className="text-slate-600 max-w-2xl mx-auto">
@@ -258,9 +269,10 @@ const InterviewSimulator: React.FC = () => {
 
 interface GA4SimulatorProps {
     initialContext?: SimulationRedirect | null;
+    onBack: () => void;
 }
 
-const GA4Simulator: React.FC<GA4SimulatorProps> = ({ initialContext }) => {
+const GA4Simulator: React.FC<GA4SimulatorProps> = ({ initialContext, onBack }) => {
   // Navigation State
   const [activeNav, setActiveNav] = useState<NavItem>('home');
   const [activeSubNav, setActiveSubNav] = useState<SubNavItem>('snapshot');
@@ -274,42 +286,30 @@ const GA4Simulator: React.FC<GA4SimulatorProps> = ({ initialContext }) => {
   // Home Chart Tab State
   const [homeChartTab, setHomeChartTab] = useState<'users' | 'event_count' | 'key_events'>('users');
   
-  // Task Overlay
-  const [taskMessage, setTaskMessage] = useState<string | null>(null);
-
   // Handle Initial Context Redirect
   useEffect(() => {
       if (initialContext) {
           if (initialContext.page) setActiveNav(initialContext.page as NavItem);
           if (initialContext.subPage) setActiveSubNav(initialContext.subPage as SubNavItem);
-          if (initialContext.message) setTaskMessage(initialContext.message);
       }
   }, [initialContext]);
 
   return (
     <div className="flex flex-col h-full bg-[#f9f9f9] text-slate-800 font-sans relative">
       
-      {/* Learning Task Overlay */}
-      {taskMessage && (
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in-up w-[90%] md:w-auto">
-              <div className="bg-slate-800 text-white px-6 py-4 rounded-xl shadow-lg border-2 border-orange-500 flex items-start gap-4 max-w-lg">
-                  <div className="bg-orange-500 rounded-full p-1 mt-0.5 shrink-0">
-                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                  </div>
-                  <div>
-                      <h4 className="text-orange-400 text-xs font-bold uppercase tracking-wider mb-1">Current Task</h4>
-                      <p className="text-sm font-medium">{taskMessage}</p>
-                  </div>
-                  <button onClick={() => setTaskMessage(null)} className="text-slate-400 hover:text-white transition-colors">
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                  </button>
-              </div>
-          </div>
-      )}
+      {/* Minimalist Return Overlay */}
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in-up">
+          <button 
+            onClick={onBack}
+            className="bg-slate-800 hover:bg-slate-900 text-white px-5 py-3 rounded-full shadow-lg border border-slate-700 flex items-center space-x-3 transition-transform hover:scale-105"
+          >
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-sm font-bold">Simulator Active — Return to Lesson</span>
+              <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+          </button>
+      </div>
 
       {/* Top Bar */}
       <div className="bg-white border-b border-gray-200 h-[60px] flex items-center justify-between px-4 shrink-0 shadow-sm z-20 relative">
@@ -335,11 +335,6 @@ const GA4Simulator: React.FC<GA4SimulatorProps> = ({ initialContext }) => {
         </div>
 
         <div className="flex items-center space-x-4">
-           <button className="text-gray-500 hover:bg-gray-100 p-2 rounded-full hidden md:block">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-           </button>
            <div className="w-8 h-8 rounded-full bg-green-700 text-white flex items-center justify-center text-sm font-medium cursor-pointer">
                M
            </div>
@@ -403,7 +398,7 @@ const GA4Simulator: React.FC<GA4SimulatorProps> = ({ initialContext }) => {
         )}
 
         {/* MAIN CONTENT VIEWS */}
-        <div className="flex-1 overflow-y-auto bg-[#f9f9f9] p-6">
+        <div className="flex-1 overflow-y-auto bg-[#f9f9f9] p-6 pb-24">
           
           {/* VIEW: HOME DASHBOARD */}
           {activeNav === 'home' && (

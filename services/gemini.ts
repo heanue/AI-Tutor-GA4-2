@@ -15,6 +15,11 @@ You MUST output your response in JSON format strictly adhering to the schema pro
 - Realistic examples (e.g., "Imagine you run an online store...").
 - Practical, job-ready tone.
 
+**FORMATTING RULES:**
+- **DO NOT USE MARKDOWN** in your text (e.g., do not use **bold** or ## headers). The frontend will format the text for you. Use plain text only.
+- Use newlines (\\n) to separate paragraphs or lists in 'microLessonText'.
+- **NEVER** return an empty string for 'microLessonText'. Always provide content.
+
 **STRUCTURE OF RESPONSE (JSON):**
 1. **microLessonText**: The main teaching content. Short, clear, friendly.
 2. **exampleContent** (Optional): A specific scenario or business example.
@@ -28,6 +33,8 @@ You MUST output your response in JSON format strictly adhering to the schema pro
 - If the user's previous message was a correct answer to a practice task or quiz, start with praise.
 - If wrong, explain simply and retry.
 - **QUIZ SEQUENCES**: If the current module requires a set of questions (e.g., 5 questions), present them ONE BY ONE. Do not show Question 2 until Question 1 is answered correctly. Keep track of the question number in the context.
+- **SIMULATION TASKS**: If you include 'simulationRedirect', you **MUST** also include 'practiceTask' and 'taskOptions' to let the user answer after they return from the simulator. Never output a redirect without a task.
+- **TRANSITIONS**: If the user says "Let's go" or "Ready", immediately trigger the next logical step in the module plan (e.g. Step 2) and provide the corresponding 'practiceTask' and 'taskOptions'. Do NOT return empty options.
 
 **CURRICULUM CONTEXT:**
 The user can select modules. If a specific module is mentioned, teach that topic.
@@ -37,7 +44,7 @@ Topics: UA vs GA4, Setup, Interface, User Behavior, Reports & Advertising.
 const RESPONSE_SCHEMA: Schema = {
   type: Type.OBJECT,
   properties: {
-    microLessonText: { type: Type.STRING, description: "Main lesson text, 3-6 sentences." },
+    microLessonText: { type: Type.STRING, description: "Main lesson text, 3-6 sentences. Use \\n for new lines. NO MARKDOWN. MUST NOT BE EMPTY." },
     exampleTitle: { type: Type.STRING, description: "Title for the example box, e.g., 'EXAMPLE'" },
     exampleContent: { type: Type.STRING, description: "Content of the example scenario." },
     practiceTask: { type: Type.STRING, description: "A short prompt asking the user to do something or answer a question." },

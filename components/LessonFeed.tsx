@@ -77,14 +77,38 @@ const LessonCard: React.FC<{
       setOptionsVisible(false);
   }
 
+  // Helper to render text with paragraphs nicely
+  const renderFormattedText = (text: string) => {
+      if (!text) return <p className="text-slate-500 italic">Content loading...</p>;
+
+      return text.split('\n').map((line, i) => {
+          const trimmed = line.trim();
+          if (!trimmed) return <div key={i} className="h-4"></div>;
+          
+          // Check for "1. Title" style headers
+          if (/^\d+\./.test(trimmed) || trimmed.endsWith(':')) {
+              return <h3 key={i} className="font-bold text-slate-800 mt-4 mb-2 text-lg">{trimmed.replace(/\*\*/g, '')}</h3>;
+          }
+          // Check for bullet points (dashes, bullets, or chevrons)
+          if (trimmed.startsWith('-') || trimmed.startsWith('•') || trimmed.startsWith('›')) {
+               return (
+                  <div key={i} className="flex items-start space-x-2 ml-2 mb-2">
+                      <span className="text-orange-500 mt-1.5 text-[10px]">●</span>
+                      <span className="text-slate-700 leading-relaxed">{trimmed.replace(/^[-•›]\s*/, '').replace(/\*\*/g, '')}</span>
+                  </div>
+               )
+          }
+          
+          return <p key={i} className="text-slate-700 leading-relaxed mb-3 text-base">{trimmed.replace(/\*\*/g, '')}</p>;
+      });
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       {/* 1. Micro Lesson Text */}
       <div className="p-6">
         <div className="prose prose-slate max-w-none">
-          <p className="text-slate-700 leading-relaxed text-base">
-            {content.microLessonText}
-          </p>
+          {renderFormattedText(content.microLessonText)}
         </div>
       </div>
 
@@ -188,40 +212,59 @@ const LessonCard: React.FC<{
         </div>
       )}
       
-      {/* 5. Practice Task Prompt & Interactive Chips */}
-       {content.practiceTask && (
+      {/* 5. Practice Task & Simulator Button */}
+      {(content.practiceTask || content.simulationRedirect) && (
         <div className="px-6 pb-6 pt-2">
-            <p className="text-sm font-medium text-orange-600 flex items-center mb-3">
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                {content.practiceTask}
-            </p>
-
-            {/* Simulation Redirect Button */}
+            
+            {/* Simulator Button - Smaller, Secondary Style */}
             {content.simulationRedirect && (
-                 <button 
-                    onClick={() => onSimulatorRedirect(content.simulationRedirect!)}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-sm mb-3 animate-fade-in"
-                >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <span>Practice in Simulator</span>
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
-                </button>
+                 <div className="mb-6">
+                    <button 
+                        onClick={() => onSimulatorRedirect(content.simulationRedirect!)}
+                        className="inline-flex items-center space-x-2 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 font-medium py-2 px-4 rounded-lg text-sm transition-colors group"
+                    >
+                        <div className="bg-white p-1 rounded-md border border-blue-100">
+                            <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </div>
+                        <span>Open Simulator Link</span>
+                        <svg className="w-3 h-3 text-blue-400 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                    <p className="text-xs text-slate-400 mt-2 ml-1">
+                        *Opens in full-screen interactive mode
+                    </p>
+                </div>
             )}
 
-            {/* Render Selectable Options if provided */}
+            {/* Question Text */}
+            {content.practiceTask && (
+                <div className="mb-3 animate-fade-in">
+                    <p className="text-sm font-bold text-slate-800 flex items-start">
+                        <span className="bg-orange-100 text-orange-600 p-1 rounded mr-2 shrink-0 mt-0.5">
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </span>
+                        {content.practiceTask}
+                    </p>
+                </div>
+            )}
+
+            {/* Interactive Chips */}
             {content.taskOptions && optionsVisible && (
-                <div className="flex flex-wrap gap-2 animate-fade-in">
+                <div className="flex flex-col gap-2 animate-fade-in">
                     {content.taskOptions.map((opt, idx) => (
                         <button 
                             key={idx}
                             onClick={() => handleTaskOption(opt)}
-                            className="bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
+                            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors shadow-sm border ${
+                                opt === "Let's go!" || opt === "Let's go"
+                                ? 'bg-orange-500 text-white border-orange-600 hover:bg-orange-600 text-center font-bold'
+                                : 'bg-white hover:bg-orange-50 text-slate-600 hover:text-orange-700 border-slate-200 hover:border-orange-200'
+                            }`}
                         >
                             {opt}
                         </button>

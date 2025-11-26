@@ -195,9 +195,9 @@ const CourseCard: React.FC<CourseCardProps> = ({ title, category, description, a
                 <ul className="space-y-2">
                     {agenda.map((item, idx) => (
                         <li key={idx} className="flex items-start text-sm text-slate-700">
-                            <svg className="w-4 h-4 text-green-500 mr-2 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
+                             <svg className="w-4 h-4 text-slate-400 mr-2 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                             </svg>
                             {item}
                         </li>
                     ))}
