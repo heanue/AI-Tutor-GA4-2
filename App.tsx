@@ -29,6 +29,7 @@ const MOD_3_PROMPT = `
 TEACHING PLAN for MODULE 3 (Interface Overview):
 You must follow this EXACT state-machine sequence. 
 Check the user's last message to determine which step to output.
+For this module, DO NOT ask quiz questions. Instead, give the user a task to perform in the simulator, and a single button to continue.
 
 **STATE 1: INTRO (Default Start)**
 - IF user starts module, OUTPUT:
@@ -38,31 +39,31 @@ Check the user's last message to determine which step to output.
 
 **STATE 2: HOME PAGE**
 - IF user says "Let's go!" or "Let's go", OUTPUT:
-  - 'microLessonText': "1. The Home Page: Your AI Command Center\n\nThe Home page is not just a static dashboard; it is dynamic. Google uses machine learning to surface 'Insights' and 'Recommendations' tailored to your specific data history.\n\nIt highlights:\n- **Key Metrics**: Users, Event Count, and Conversions at a glance.\n- **Recently Accessed**: Quickly jump back to reports you use often.\n- **Suggested Insights**: Automated anomaly detection (e.g., 'Spike in users from Japan').\n\nUse the Home page for a daily health check of your property before diving deep."
+  - 'microLessonText': "1. The Home Page: Your AI Command Center\n\nThe Home page is your dynamic landing station. Google uses machine learning to surface 'Insights' and 'Recommendations' tailored to your specific data history.\n\nIt highlights:\n- **Key Metrics Card**: Shows 'Users', 'Event Count', and 'Conversions' at a glance. Note the trend lines (dotted vs solid) to compare date ranges.\n- **Recently Accessed**: Quickly jump back to reports you use often.\n- **Suggested Insights**: Automated anomaly detection (e.g., 'Spike in users from Japan')."
   - 'simulationRedirect': { "page": "home", "message": "Explore the Home dashboard metrics." }
-  - 'practiceTask': "Open the Simulator to check the Home Dashboard. What is the total 'Event Count' displayed in the main card?"
-  - 'taskOptions': ["68K", "2M", "146K"]
+  - 'practiceTask': "Task: Open the Simulator and locate the 'Event Count' metric on the main card."
+  - 'taskOptions': ["I found it"]
 
 **STATE 3: REPORTS SNAPSHOT**
-- IF user answers "2M" (or correctly identifies Event Count), OUTPUT:
-  - 'microLessonText': "2. Reports Snapshot: The Life Cycle Collection\n\nNavigate to the 'Reports' workspace. Unlike the Home page, this is where structured analysis happens. The menu is divided into two main Collections:\n\n1. **Life Cycle**: Mirrors the user funnel (Acquisition -> Engagement -> Monetization -> Retention).\n2. **User**: Who your visitors are (Demographics -> Tech).\n\nThe 'Reports Snapshot' is the overview dashboard for all these reports. It gives you 'cheat sheet' cards for every stage of the funnel."
+- IF user says "I found it" (or implies completion), OUTPUT:
+  - 'microLessonText': "2. Reports Snapshot: The Life Cycle Collection\n\nNavigate to the 'Reports' workspace. This is where structured analysis happens. The 'Reports Snapshot' is your overview dashboard.\n\nKey Cards Explained:\n- **Users (Top Card)**: Shows 'New Users' vs 'Returning Users'. Use this to gauge growth health.\n- **Users by Channel (Bar Chart)**: Breaks down traffic sources (Direct, Organic, Paid). This tells you *where* your marketing is working.\n- **Users by Country (Map)**: A geographic heatmap. Essential for spotting international trends or localizing content."
   - 'simulationRedirect': { "page": "reports", "subPage": "snapshot", "message": "Explore the Reports Snapshot cards." }
-  - 'practiceTask': "Check the Simulator's Snapshot. Which channel group (blue bar) is currently driving the most traffic in the 'Users by Session default channel group' card?"
-  - 'taskOptions': ["Direct", "Organic Search", "Paid Search"]
+  - 'practiceTask': "Task: In the Simulator, analyze the 'Users by Session default channel group' chart to identify the top traffic source."
+  - 'taskOptions': ["Next Report"]
 
 **STATE 4: REALTIME**
-- IF user answers "Direct" (or correctly identifies channel), OUTPUT:
-  - 'microLessonText': "3. Realtime Report: Immediate Validation\n\nThe Realtime report is unique because it shows data from the last 30 minutes (per minute). \n\n**Why use this?**\n- **Debugging**: Did you just launch a new campaign or tag? Check here to see if traffic hits immediately.\n- **Urgency**: Monitor flash sales or viral social posts as they happen.\n\nNote: Data here is not fully processed yet, so do not use it for historical reporting."
+- IF user says "Next Report" (or implies completion), OUTPUT:
+  - 'microLessonText': "3. Realtime Report: Immediate Validation\n\nThe Realtime report shows data from the last 30 minutes, minute-by-minute.\n\n**Why use this?**\n- **Debugging**: Did you just launch a new campaign or tag? Check here to see if traffic hits immediately.\n- **Urgency**: Monitor flash sales or viral social posts as they happen.\n\nNote: Data here is not fully processed yet, so do not use it for historical reporting."
   - 'simulationRedirect': { "page": "reports", "subPage": "realtime", "message": "View the Realtime activity map and cards." }
-  - 'practiceTask': "In the Simulator's Realtime view, look at the top card. How many 'Active Users' are on the site right now (last 30 min)?"
-  - 'taskOptions': ["37", "42", "9"]
+  - 'practiceTask': "Task: Open Realtime view in the Simulator and observe the 'Active Users' count updating."
+  - 'taskOptions': ["Continue"]
 
 **STATE 5: EXPLORATIONS**
-- IF user answers "42" (or correctly identifies users), OUTPUT:
-  - 'microLessonText': "4. Explorations: Beyond Standard Reports\n\nStandard reports (like Acquisition) are 'aggregated'—they are pre-built and static. Sometimes, you need to answer complex questions like \"What exact path did users take from the Home page to the Cart?\"\n\nFor this, we use **Explorations**. This is a canvas for ad-hoc analysis where you can drag-and-drop segments, dimensions, and metrics to build custom visualizations like Funnels and Path analysis."
+- IF user says "Continue" (or implies completion), OUTPUT:
+  - 'microLessonText': "4. Explorations: Beyond Standard Reports\n\nStandard reports are static. For deep, ad-hoc analysis, we use **Explorations**.\n\nCommon Techniques:\n- **Free Form**: A blank canvas for cross-tabs and segments.\n- **Funnel Exploration**: Visualizes steps users take (e.g., Start -> Cart -> Purchase) to find drop-offs.\n- **Path Exploration**: A tree graph showing the literal sequence of pages users visited."
   - 'simulationRedirect': { "page": "explore", "message": "Check the available Exploration templates." }
-  - 'practiceTask': "Which Exploration tool in the simulator is best for visualizing the specific steps (or tree graph) users take through your site?"
-  - 'taskOptions': ["Free form", "Path exploration", "Funnel exploration"]
+  - 'practiceTask': "Task: Open the Simulator to see the available Exploration templates."
+  - 'taskOptions': ["Complete Module"]
 `;
 
 const MODULES: Module[] = [
@@ -130,15 +131,17 @@ const App: React.FC = () => {
         timestamp: Date.now()
     };
     
-    setMessages(prev => [...prev, userMsg]);
+    // Optimistically update UI
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
     setIsLoading(true);
 
     try {
         // Get context from active module
         const context = activeModule ? activeModule.promptContext : undefined;
         
-        // Call API
-        const responseContent = await sendMessageToGemini(messages.concat(userMsg), text, context);
+        // Call API with FULL history
+        const responseContent = await sendMessageToGemini(newMessages, text, context);
         
         const botMsg: Message = {
             id: (Date.now() + 1).toString(),

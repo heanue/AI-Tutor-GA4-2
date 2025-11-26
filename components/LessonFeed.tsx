@@ -85,16 +85,29 @@ const LessonCard: React.FC<{
           const trimmed = line.trim();
           if (!trimmed) return <div key={i} className="h-4"></div>;
           
-          // Check for "1. Title" style headers
-          if (/^\d+\./.test(trimmed) || trimmed.endsWith(':')) {
+          // Check for headers (e.g. "1. Home Page" or "Key Metrics:")
+          if (/^\d+\./.test(trimmed) || /:$/.test(trimmed)) {
               return <h3 key={i} className="font-bold text-slate-800 mt-4 mb-2 text-lg">{trimmed.replace(/\*\*/g, '')}</h3>;
           }
           // Check for bullet points (dashes, bullets, or chevrons)
           if (trimmed.startsWith('-') || trimmed.startsWith('•') || trimmed.startsWith('›')) {
+               // Check if bullet has a bold label part (e.g. "- **Label**: desc")
+               const parts = trimmed.replace(/^[-•›]\s*/, '').split(':');
+               if (parts.length > 1) {
+                    return (
+                        <div key={i} className="flex items-start space-x-2 ml-2 mb-2">
+                            <span className="text-orange-500 mt-1.5 text-[10px] shrink-0">●</span>
+                            <p className="text-slate-700 leading-relaxed text-base">
+                                <span className="font-bold text-slate-800">{parts[0].replace(/\*\*/g, '')}:</span>
+                                {parts.slice(1).join(':').replace(/\*\*/g, '')}
+                            </p>
+                        </div>
+                    );
+               }
                return (
                   <div key={i} className="flex items-start space-x-2 ml-2 mb-2">
-                      <span className="text-orange-500 mt-1.5 text-[10px]">●</span>
-                      <span className="text-slate-700 leading-relaxed">{trimmed.replace(/^[-•›]\s*/, '').replace(/\*\*/g, '')}</span>
+                      <span className="text-orange-500 mt-1.5 text-[10px] shrink-0">●</span>
+                      <span className="text-slate-700 leading-relaxed text-base">{trimmed.replace(/^[-•›]\s*/, '').replace(/\*\*/g, '')}</span>
                   </div>
                )
           }
@@ -228,7 +241,7 @@ const LessonCard: React.FC<{
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                             </svg>
                         </div>
-                        <span>Open Simulator Link</span>
+                        <span>Open Simulator to Practice</span>
                         <svg className="w-3 h-3 text-blue-400 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
@@ -239,7 +252,7 @@ const LessonCard: React.FC<{
                 </div>
             )}
 
-            {/* Question Text */}
+            {/* Question/Task Text */}
             {content.practiceTask && (
                 <div className="mb-3 animate-fade-in">
                     <p className="text-sm font-bold text-slate-800 flex items-start">
@@ -255,13 +268,14 @@ const LessonCard: React.FC<{
 
             {/* Interactive Chips */}
             {content.taskOptions && optionsVisible && (
-                <div className="flex flex-col gap-2 animate-fade-in">
+                <div className={`flex flex-col gap-2 animate-fade-in ${content.taskOptions.length === 1 ? 'items-start' : ''}`}>
                     {content.taskOptions.map((opt, idx) => (
                         <button 
                             key={idx}
                             onClick={() => handleTaskOption(opt)}
                             className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors shadow-sm border ${
-                                opt === "Let's go!" || opt === "Let's go"
+                                // Highlight if it's a primary "Let's go" or "Continue" single button
+                                content.taskOptions?.length === 1 || opt === "Let's go!" || opt === "Let's go"
                                 ? 'bg-orange-500 text-white border-orange-600 hover:bg-orange-600 text-center font-bold'
                                 : 'bg-white hover:bg-orange-50 text-slate-600 hover:text-orange-700 border-slate-200 hover:border-orange-200'
                             }`}

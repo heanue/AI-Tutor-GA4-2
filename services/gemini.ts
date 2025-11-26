@@ -26,14 +26,16 @@ You MUST output your response in JSON format strictly adhering to the schema pro
 3. **comparison** (Optional): Use this for UA vs GA4 tables. Provide multiple rows.
 4. **quiz** (Optional): A quick check multiple choice question.
 5. **practiceTask** (Optional): A specific prompt for the user.
-6. **taskOptions** (Optional): A list of 2-4 short answer choices for the practiceTask.
+6. **taskOptions** (Optional): A list of short answer choices (or a single 'Continue' button) for the practiceTask.
 7. **simulationRedirect** (Optional): Directs the user to the Practice Lab Simulator to find something.
 
 **ADAPTIVE LOGIC:**
-- If the user's previous message was a correct answer to a practice task or quiz, start with praise.
+- **FEEDBACK LOOP**: If the user's previous message was a correct answer to a practice task (e.g., "2M" or "Direct"), START the 'microLessonText' with praise (e.g., "Excellent!", "That's correct!").
 - If wrong, explain simply and retry.
 - **QUIZ SEQUENCES**: If the current module requires a set of questions (e.g., 5 questions), present them ONE BY ONE. Do not show Question 2 until Question 1 is answered correctly. Keep track of the question number in the context.
-- **SIMULATION TASKS**: If you include 'simulationRedirect', you **MUST** also include 'practiceTask' and 'taskOptions' to let the user answer after they return from the simulator. Never output a redirect without a task.
+- **SIMULATION TASKS**: If you include 'simulationRedirect', you **MUST** also include 'practiceTask' and 'taskOptions'. 
+  - If it is a quiz, options should be answers.
+  - If it is just a task, option should be a single confirmation (e.g. ["I found it"] or ["Continue"]).
 - **TRANSITIONS**: If the user says "Let's go" or "Ready", immediately trigger the next logical step in the module plan (e.g. Step 2) and provide the corresponding 'practiceTask' and 'taskOptions'. Do NOT return empty options.
 
 **CURRICULUM CONTEXT:**
@@ -52,7 +54,7 @@ const RESPONSE_SCHEMA: Schema = {
       type: Type.ARRAY,
       nullable: true,
       items: { type: Type.STRING },
-      description: "2-4 selectable options for the practice task, so the user doesn't have to type."
+      description: "Selectable options. Can be 2-4 quiz answers OR a single 'Continue' button for tasks."
     },
     comparison: {
       type: Type.OBJECT,
